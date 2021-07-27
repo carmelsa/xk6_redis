@@ -35,9 +35,10 @@ func (r *Redis) XClient(ctxPtr *context.Context, server string, max int, timeout
 	return common.Bind(rt, &Client{client: redis.NewClient(opts)}, ctxPtr)
 }
 
-// Clusterclient represents the Cluster client constructor (i.e. `new redis.Client()`) and
+// ClusterClient represents the Cluster client constructor (i.e. `new redis.ClusterClient()`) and
 // returns a new Redis Cluster client object.
-func (r *Redis) Clusterclient(ctxPtr *context.Context, server string, max int, timeout int) interface{} {
+func (r *Redis) ClusterClient(ctxPtr *context.Context, server string, max int, timeout int) interface{} {
+	fmt.Printf("start cluster client")
 	servers := []string{server}
 	opts := &redis.ClusterOptions{Addrs: servers, PoolTimeout: time.Duration(timeout), PoolSize: max}
 	rt := common.GetRuntime(*ctxPtr)

@@ -33,14 +33,14 @@ func (r *Redis) XClient(ctxPtr *context.Context, server string, max int, timeout
 
 // Set the given key with the given value and expiration time.
 func (c *Client) Set(key, value string, exp time.Duration) {
-	err := c.client.Set(c.client.Context(), key, value, exp)
+	_, err := c.client.Set(c.client.Context(), key, value, exp).Result()
 	if err != nil {
 		fmt.Println(fmt.Sprintf("error seting key %v", err))
 	}
 }
 
 func (c *Client) Flushall() {
-	err := c.client.FlushAll(c.client.Context())
+	_, err := c.client.FlushAll(c.client.Context()).Result()
 	if err != nil {
 		fmt.Println(fmt.Sprintf("error flush all data %v", err))
 	}

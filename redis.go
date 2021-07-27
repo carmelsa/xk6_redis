@@ -23,12 +23,26 @@ type Client struct {
 	client *redis.Client
 }
 
+type ClusterClient struct {
+	clusterClient *redis.ClusterClient
+}
+
 // XClient represents the Client constructor (i.e. `new redis.Client()`) and
 // returns a new Redis client object.
 func (r *Redis) XClient(ctxPtr *context.Context, server string, max int, timeout int) interface{} {
 	opts := &redis.Options{Addr: server, PoolTimeout: time.Duration(timeout), PoolSize: max}
 	rt := common.GetRuntime(*ctxPtr)
 	return common.Bind(rt, &Client{client: redis.NewClient(opts)}, ctxPtr)
+}
+
+// Clusterclient represents the Cluster client constructor (i.e. `new redis.Client()`) and
+// returns a new Redis Cluster client object.
+func (r *Redis) Clusterclient(ctxPtr *context.Context, server string, max int, timeout int) interface{} {
+	servers := []string{server}
+	opts := &redis.ClusterOptions{Addrs: servers, PoolTimeout: time.Duration(timeout), PoolSize: max}
+	rt := common.GetRuntime(*ctxPtr)
+	clusterClient := ClusterClient{clusterClient: redis.NewClusterClient(opts)}
+	return common.Bind(rt, &clusterClient, ctxPtr)
 }
 
 // Set the given key with the given value and expiration time.
@@ -49,6 +63,30 @@ func (c *Client) Flushall() {
 // Get returns the value for the given key.
 func (c *Client) Get(key string) (string, error) {
 	res, err := c.client.Get(key).Result()
+	if err != nil {
+		return "", err
+	}
+	return res, nil
+}
+
+func (c *ClusterClient) Flushall() {
+	_, err := c.clusterClient.FlushAll().Result()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("error flush all data %v", err))
+	}
+}
+
+// Set the given key with the given value and expiration time.
+func (c *ClusterClient) Set(key, value string, exp time.Duration) {
+	_, err := c.clusterClient.Set(key, value, exp).Result()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("error seting key %v", err))
+	}
+}
+
+// Get returns the value for the given key.
+func (c *ClusterClient) Get(key string) (string, error) {
+	res, err := c.clusterClient.Get(key).Result()
 	if err != nil {
 		return "", err
 	}

@@ -36,8 +36,9 @@ func (r *Redis) XClient(ctxPtr *context.Context, server string, max int, timeout
 }
 
 // Set the given key with the given value and expiration time.
-func (c *Client) Set(key, value string, exp time.Duration) {
-	_, err := c.client.Set(c.client.Context(), key, value, exp).Result()
+func (c *Client) Set(key, value string, exp int) {
+	expiration := time.Duration(exp) * time.Millisecond
+	_, err := c.client.Set(c.client.Context(), key, value, expiration).Result()
 	if err != nil {
 		fmt.Println(fmt.Sprintf("error seting key %v", err))
 	}
